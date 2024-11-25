@@ -40,7 +40,7 @@ class Attention(nn.Module):
         v = self.value(x).view(B, T, Config.n_head, C // Config.n_head).transpose(1, 2)
 
         # casual self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
-        att = F.softmax((q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1))), dim=-1)
+        att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
         att = self.attn_drop(att)
         y = att @ v
         y = y.transpose(1, 2).contiguous().view(B, T, C)
@@ -60,7 +60,6 @@ class TransformerBlock(nn.Module):
         self.attn = Attention()
         self.mlp = nn.Sequential(
             nn.Linear(Config.n_embd, Config.n_embd // 16),
-            nn.ReLU(), 
             nn.Linear(Config.n_embd // 16, Config.n_embd),
             nn.Dropout(Config.resid_pdrop),
         )
